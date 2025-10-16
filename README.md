@@ -50,4 +50,4 @@ DELETE /api/zadania/{id} — usuwa zadanie z listy
 Aplikacja posiada prostą stronę HTML, która umożliwia bezpośrednią interakcję z API.
 Użytkownik może dodawać nowe zadania, przeglądać listę lub usuwać pozycje jednym kliknięciem.
 
-Przykładowy wygląd listy zadań:
+Przykładowy wygląd listy zadań:<img width="1916" height="940" alt="photo" src="https://github.com/user-attachments/assets/eafd73df-7456-4120-ba71-9afaa421e5e1" />
