@@ -1,159 +1,206 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Zadania</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 40px auto;
-      max-width: 700px;
-      padding: 20px;
-      color: #333;
-    }
-    h1, h2 { text-align: center; }
-    .form-container {
-      background: #fff;
-      padding: 15px 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    input {
-      margin: 5px 0;
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-    button {
-      padding: 8px 14px;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-    button:hover { background: #0056b3; }
-    ul { list-style: none; padding: 0; }
-    li {
-      background: white;
-      margin-bottom: 10px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    .zadanie-info { flex: 1; }
-    .delete-btn { background: #dc3545; }
-    .delete-btn:hover { background: #a71d2a; }
-  </style>
-</head>
-<body>
-  <h1>Zadania</h1>
-
-  <div class="form-container">
-    <input id="tytul" placeholder="Tytuł">
-    <input id="opis" placeholder="Opis">
-    <input id="deadline" type="date">
-    <input id="priorytet" type="number" min="1" max="5" value="3">
-    <input id="status" placeholder="Status (np. todo)">
-    <button onclick="addZadanie()">➕ Dodaj zadanie</button>
-  </div>
-
-  <h2>Lista zadań</h2>
-  <ul id="lista"></ul>
-
-  <script>
-    const API = "http://localhost:5000/api/zadania";
-
-    async function loadZadania() {
-      try {
-        const res = await fetch(API);
-        if (!res.ok) throw new Error("Błąd: " + res.status);
-        const data = await res.json();
-
-        const list = document.getElementById("lista");
-        list.innerHTML = "";
-
-        if (data.length === 0) {
-          list.innerHTML = "<li>Brak zadań</li>";
-          return;
+    <meta charset="UTF-8">
+    <title>Zadania</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 40px auto;
+            max-width: 700px;
+            padding: 20px;
+            color: #333;
         }
 
-        data.forEach(z => {
-          const li = document.createElement("li");
-          const info = document.createElement("div");
-          info.className = "zadanie-info";
-          info.textContent = `${z.tytul} (${z.status}) — priorytet ${z.priorytet}`;
+        h1, h2 {
+            text-align: center;
+        }
 
-          const del = document.createElement("button");
-          del.className = "delete-btn";
-          del.textContent = "Usuń";
-          del.onclick = () => deleteZadanie(z.id);
+        .form-container {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
 
-          li.appendChild(info);
-          li.appendChild(del);
-          list.appendChild(li);
-        });
-      } catch (e) {
-        console.error(e);
-        alert("Nie udało się wczytać danych");
-      }
-    }
+        input {
+            margin: 5px 0;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
 
-    async function addZadanie() {
-      const zad = {
-        tytul: document.getElementById("tytul").value.trim(),
-        opis: document.getElementById("opis").value.trim(),
-        deadline: document.getElementById("deadline").value || null,
-        priorytet: parseInt(document.getElementById("priorytet").value) || 1,
-        status: document.getElementById("status").value.trim() || "todo"
-      };
+        button {
+            padding: 8px 14px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+            margin-right: 5px;
+        }
 
-      try {
-        const res = await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(zad)
-        });
+            button:hover {
+                background: #0056b3;
+            }
 
-        if (!res.ok) throw new Error("Błąd dodawania: " + res.status);
+        ul {
+            list-style: none;
+            padding: 0;
+        }
 
-        document.getElementById("tytul").value = "";
-        document.getElementById("opis").value = "";
-        document.getElementById("deadline").value = "";
-        document.getElementById("priorytet").value = 3;
-        document.getElementById("status").value = "";
+        li {
+            background: white;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
 
-        await loadZadania();
-      } catch (e) {
-        console.error(e);
-        alert("Nie udało się dodać zadania");
-      }
-    }
+        .zadanie-info {
+            flex: 1;
+        }
 
-    async function deleteZadanie(id) {
-      try {
-        await fetch(`${API}/${id}`, { method: "DELETE" });
-        await loadZadania();
-      } catch (e) {
-        console.error(e);
-        alert("Nie udało się usunąć zadania");
-      }
-    }
+        .actions button {
+            background: #6c757d;
+        }
 
-    loadZadania();
-  </script>
+            .actions button:hover {
+                background: #5a6268;
+            }
+
+        .delete-btn {
+            background: #dc3545;
+        }
+
+            .delete-btn:hover {
+                background: #a71d2a;
+            }
+    </style>
+</head>
+<body>
+    <h1>Zadania</h1>
+
+    <div class="form-container">
+        <input id="tytul" placeholder="Tytuł">
+        <input id="opis" placeholder="Opis">
+        <input id="deadline" type="date">
+        <input id="priorytet" type="number" min="1" max="5" value="3">
+        <input id="status" placeholder="Status (np. todo)">
+        <input type="text" id="wykonawca" placeholder="Wykonawca">
+        <input type="number" id="szacowanyCzas" placeholder="Szacowany czas (godz.)">
+        <button onclick="addZadanie()">➕ Dodaj zadanie</button>
+    </div>
+
+    <h2>Lista zadań</h2>
+    <ul id="lista"></ul>
+
+    <script>
+        const API = "http://localhost:5000/api/zadania";
+
+        async function loadZadania() {
+            try {
+                const res = await fetch(API);
+                if (!res.ok) throw new Error("Błąd: " + res.status);
+                const data = await res.json();
+
+                const list = document.getElementById("lista");
+                list.innerHTML = "";
+
+                data.forEach(z => {
+                    const li = document.createElement("li");
+                    const info = document.createElement("div");
+                    info.className = "zadanie-info";
+                    info.innerHTML = `<strong>${z.tytul}</strong> (${z.status}) — priorytet ${z.priorytet}<br><small>Wykonawca: ${z.wykonawca} | Czas: ${z.szacowanyCzas}h</small>`;
+
+                    const actionsDiv = document.createElement("div");
+                    actionsDiv.className = "actions";
+
+                    const editBtn = document.createElement("button");
+                    editBtn.textContent = "Edytuj";
+                    editBtn.onclick = () => editZadanie(z);
+
+                    const delBtn = document.createElement("button");
+                    delBtn.className = "delete-btn";
+                    delBtn.textContent = "Usuń";
+                    delBtn.onclick = () => deleteZadanie(z.id);
+
+                    actionsDiv.appendChild(editBtn);
+                    actionsDiv.appendChild(delBtn);
+                    li.appendChild(info);
+                    li.appendChild(actionsDiv);
+                    list.appendChild(li);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function addZadanie() {
+            const zad = {
+                tytul: document.getElementById("tytul").value.trim(),
+                opis: document.getElementById("opis").value.trim(),
+                deadline: document.getElementById("deadline").value || null,
+                priorytet: parseInt(document.getElementById("priorytet").value) || 1,
+                status: document.getElementById("status").value.trim() || "todo",
+                wykonawca: document.getElementById("wykonawca").value.trim(),
+                szacowanyCzas: parseInt(document.getElementById("szacowanyCzas").value) || 0
+            };
+
+            try {
+                const res = await fetch(API, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(zad)
+                });
+                if (!res.ok) throw new Error("Błąd dodawania: " + res.status);
+
+                document.getElementById("tytul").value = "";
+                document.getElementById("opis").value = "";
+                document.getElementById("deadline").value = "";
+                document.getElementById("priorytet").value = "3";
+                document.getElementById("status").value = "";
+                document.getElementById("wykonawca").value = "";
+                document.getElementById("szacowanyCzas").value = "";
+
+                await loadZadania();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function editZadanie(zadanie) {
+            document.getElementById("tytul").value = zadanie.tytul;
+            document.getElementById("opis").value = zadanie.opis;
+            document.getElementById("deadline").value = zadanie.deadline ? new Date(zadanie.deadline).toISOString().split('T')[0] : '';
+            document.getElementById("priorytet").value = zadanie.priorytet;
+            document.getElementById("status").value = zadanie.status;
+            document.getElementById("wykonawca").value = zadanie.wykonawca;
+            document.getElementById("szacowanyCzas").value = zadanie.szacowanyCzas;
+
+            deleteZadanie(zadanie.id);
+        }
+
+        async function deleteZadanie(id) {
+            try {
+                await fetch(`${API}/${id}`, { method: "DELETE" });
+                await loadZadania();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        loadZadania();
+    </script>
 </body>
 </html>
-
-
-
