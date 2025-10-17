@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projekt1\\ZadanieApp.Api.csproj": {}
+    "C:\\Users\\iwg\\CrudVlad\\Project-CRUD-Vladyslav-Skrypnyk\\ZadanieApp.Api.csproj": {}
   },
   "projects": {
-    "D:\\Projekt1\\ZadanieApp.Api.csproj": {
+    "C:\\Users\\iwg\\CrudVlad\\Project-CRUD-Vladyslav-Skrypnyk\\ZadanieApp.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projekt1\\ZadanieApp.Api.csproj",
+        "projectUniqueName": "C:\\Users\\iwg\\CrudVlad\\Project-CRUD-Vladyslav-Skrypnyk\\ZadanieApp.Api.csproj",
         "projectName": "ZadanieApp.Api",
-        "projectPath": "D:\\Projekt1\\ZadanieApp.Api.csproj",
-        "packagesPath": "C:\\Users\\egopr\\.nuget\\packages\\",
-        "outputPath": "D:\\Projekt1\\obj\\",
+        "projectPath": "C:\\Users\\iwg\\CrudVlad\\Project-CRUD-Vladyslav-Skrypnyk\\ZadanieApp.Api.csproj",
+        "packagesPath": "C:\\Users\\iwg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\iwg\\CrudVlad\\Project-CRUD-Vladyslav-Skrypnyk\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\egopr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\iwg\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,7 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -44,8 +39,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -92,7 +86,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.317/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
