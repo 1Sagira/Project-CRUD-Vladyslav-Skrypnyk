@@ -65,6 +65,8 @@ namespace ZadanieApp.Api.Controllers
             exist.Deadline = input.Deadline;
             exist.Priorytet = input.Priorytet;
             exist.Status = input.Status;
+            exist.Wykonawca = input.Wykonawca;
+            exist.SzacowanyCzas = input.SzacowanyCzas;
             exist.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();

@@ -30,5 +30,10 @@ namespace ZadanieApp.Api.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+
+        [MaxLength(100)]
+        public string Wykonawca { get; set; } = string.Empty;
+
+        public int SzacowanyCzas { get; set; } 
     }
 }
