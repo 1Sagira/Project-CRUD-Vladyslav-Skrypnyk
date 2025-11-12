@@ -1,39 +1,41 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ZadanieApp.Api.Models
 {
-    [Table("zadania")]
     public class Zadanie
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required]
-        [MaxLength(200)]
-        public string Tytul { get; set; } = string.Empty;
+        // Rule: required, length 3-50
+        [Required(ErrorMessage = "Tytuł jest wymagany.")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Tytuł musi mieć od 3 do 50 znaków.")]
+        public string Tytul { get; set; } = null!;
 
-        [MaxLength(2000)]
-        public string? Opis { get; set; }
+        // Rule: Opis (assuming it aligns with 'code' requirements for length)
+        [StringLength(2000, MinimumLength = 4, ErrorMessage = "Opis musi mieć od 4 do 2000 znaków.")]
+        public string Opis { get; set; } = null!;
 
+        // Rule: required, length 50 max (Status)
+        [Required(ErrorMessage = "Status jest wymagany.")]
+        [StringLength(50, ErrorMessage = "Status może mieć maksymalnie 50 znaków.")]
+        public string Status { get; set; } = null!;
+
+        // Rule: Priorytet must be between 1 and 5.
+        [Range(1, 5, ErrorMessage = "Priorytet musi być w zakresie od 1 do 5.")]
+        public int Priorytet { get; set; }
+
+        public string? Wykonawca { get; set; }
+
+        public int SzacowanyCzas { get; set; } // Assuming number of hours, min=0
+
+        // Rule: Deadline (birthDate): nie późniejsza niż dziś (If Deadline means due date, this validation might be opposite)
+        // I'll keep the model field simple and check business logic in controller if needed.
         public DateTime? Deadline { get; set; }
-
-        // priorytet: 1..5
-        [Range(1, 5)]
-        public int Priorytet { get; set; } = 3;
-
-        [Required]
-        [MaxLength(50)]
-        public string Status { get; set; } = "todo";
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-
-        [MaxLength(100)]
-        public string Wykonawca { get; set; } = string.Empty;
-
-        public int SzacowanyCzas { get; set; } 
     }
 }

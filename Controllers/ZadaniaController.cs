@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZadanieApp.Api.Data;
 using ZadanieApp.Api.Models;
+using System.Linq;
 
 namespace ZadanieApp.Api.Controllers
 {
@@ -10,6 +11,7 @@ namespace ZadanieApp.Api.Controllers
     public class ZadaniaController : ControllerBase
     {
         private readonly AppDbContext _db;
+
         public ZadaniaController(AppDbContext db) => _db = db;
 
         // GET /api/zadania
@@ -17,10 +19,11 @@ namespace ZadanieApp.Api.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int skip = 0, [FromQuery] int take = 100)
         {
             var list = await _db.Zadania
-                                .OrderBy(z => z.Id)
-                                .Skip(Math.Max(0, skip))
-                                .Take(Math.Clamp(take, 1, 500))
-                                .ToListAsync();
+                .OrderByDescending(z => z.Id) // Ordered by Id descending for better list viewing
+                .Skip(Math.Max(0, skip))
+                .Take(Math.Clamp(take, 1, 500))
+                .ToListAsync();
+
             return Ok(list);
         }
 
@@ -37,15 +40,33 @@ namespace ZadanieApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Zadanie model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            // Custom check and formatting for ModelState validation errors
+            if (!ModelState.IsValid)
+            {
+                var fieldErrors = ModelState.Keys
+                    .SelectMany(key => ModelState[key]!.Errors.Select(x => new 
+                    {
+                        field = key.ToLowerInvariant(),
+                        code = "INVALID_FORMAT", // Common code for simple validation failure
+                        message = x.ErrorMessage
+                    }))
+                    .ToList();
 
-            if (model.Priorytet < 1 || model.Priorytet > 5)
-                return BadRequest(new { message = "Priorytet must be between 1 and 5" });
+                var errorResponse = new 
+                {
+                    timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    status = 400,
+                    error = "Bad Request",
+                    fieldErrors = fieldErrors
+                };
+                
+                return BadRequest(errorResponse);
+            }
 
             model.CreatedAt = DateTime.UtcNow;
             model.UpdatedAt = null;
 
-            _db.Zadania.Add(model);
+            await _db.Zadania.AddAsync(model);
             await _db.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
@@ -67,8 +88,9 @@ namespace ZadanieApp.Api.Controllers
             exist.Status = input.Status;
             exist.Wykonawca = input.Wykonawca;
             exist.SzacowanyCzas = input.SzacowanyCzas;
+            
             exist.UpdatedAt = DateTime.UtcNow;
-
+            
             await _db.SaveChangesAsync();
             return Ok(exist);
         }

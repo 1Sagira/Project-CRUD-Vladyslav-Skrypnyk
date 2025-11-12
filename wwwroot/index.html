@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Zadania</title>
     <style>
+        /* CSS styles from provided images */
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
@@ -47,9 +48,9 @@
             margin-right: 5px;
         }
 
-            button:hover {
-                background: #0056b3;
-            }
+        button:hover {
+            background: #0056b3;
+        }
 
         ul {
             list-style: none;
@@ -75,31 +76,49 @@
             background: #6c757d;
         }
 
-            .actions button:hover {
-                background: #5a6268;
-            }
+        .actions button:hover {
+            background: #5a6268;
+        }
 
         .delete-btn {
             background: #dc3545;
         }
 
-            .delete-btn:hover {
-                background: #a71d2a;
-            }
+        .delete-btn:hover {
+            background: #a71d2a;
+        }
+        
+        #error-message {
+            color: #dc3545;
+            padding: 10px;
+            border: 1px solid #dc3545;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none; /* Hide by default */
+        }
     </style>
 </head>
 <body>
     <h1>Zadania</h1>
-
     <div class="form-container">
-        <input id="tytul" placeholder="Tytuł">
-        <input id="opis" placeholder="Opis">
-        <input id="deadline" type="date">
-        <input id="priorytet" type="number" min="1" max="5" value="3">
-        <input id="status" placeholder="Status (np. todo)">
-        <input type="text" id="wykonawca" placeholder="Wykonawca">
-        <input type="number" id="szacowanyCzas" placeholder="Szacowany czas (godz.)">
+        <input id="tytul" placeholder="Tytuł" required minlength="3" maxlength="50">
+        
+        <input id="opis" placeholder="Opis" required minlength="4" maxlength="2000">
+
+        <input id="deadline" type="date" placeholder="Deadline">
+
+        <input id="priorytet" type="number" min="1" max="5" value="3" placeholder="Priorytet min='1' max='5' value='3'">
+        
+        <input id="status" placeholder="Status (np. todo)" required>
+
+        <input id="wykonawca" type="text" placeholder="Wykonawca">
+        
+        <input id="szacowanyCzas" type="number" min="0" placeholder="Szacowany czas (godz.)">
+
         <button onclick="addZadanie()">➕ Dodaj zadanie</button>
+        
+        <div id="error-message"></div>
     </div>
 
     <h2>Lista zadań</h2>
@@ -107,20 +126,55 @@
 
     <script>
         const API = "https://project-crud-vladyslav-skrypnyk2.onrender.com/api/zadania";
+        
+        // Helper to display backend errors
+        function displayBackendErrors(errorData) {
+            const errorDiv = document.getElementById("error-message");
+            errorDiv.style.display = "block"; // Show the error box
+            errorDiv.innerHTML = ""; // Clear previous errors
+
+            let html = `<strong>Błąd (${errorData.status} ${errorData.error}):</strong><ul>`;
+            
+            if (errorData.fieldErrors && errorData.fieldErrors.length > 0) {
+                errorData.fieldErrors.forEach(err => {
+                    // Display specific field error messages
+                    html += `<li>[${err.field.toUpperCase()}]: ${err.message}</li>`;
+                });
+            } else {
+                // Fallback for non-field specific errors (e.g., 409 Conflict, if implemented)
+                html += `<li>Wystąpił nieznany błąd: ${errorData.message || res.statusText}</li>`;
+            }
+            html += `</ul>`;
+            errorDiv.innerHTML = html;
+        }
+
         async function loadZadania() {
             try {
                 const res = await fetch(API);
                 if (!res.ok) throw new Error("Błąd: " + res.status);
+                
                 const data = await res.json();
-
                 const list = document.getElementById("lista");
-                list.innerHTML = "";
+                list.innerHTML = ""; // Clear list
 
                 data.forEach(z => {
                     const li = document.createElement("li");
                     const info = document.createElement("div");
                     info.className = "zadanie-info";
-                    info.innerHTML = `<strong>${z.tytul}</strong> (${z.status}) — priorytet ${z.priorytet}<br><small>Wykonawca: ${z.wykonawca} | Czas: ${z.szacowanyCzas}h</small>`;
+                    
+                    // Format the deadline
+                    const deadlineDate = z.deadline ? new Date(z.deadline).toLocaleDateString() : 'Brak';
+
+                    info.innerHTML = `
+                        <strong>${z.tytul}</strong> 
+                        (${z.status}) 
+                        - priorytet ${z.priorytet}
+                        <br><small>
+                            Wykonawca: ${z.wykonawca || 'Brak'}; 
+                            Czas: ${z.szacowanyCzas} godz.; 
+                            Deadline: ${deadlineDate}
+                        </small>
+                    `;
 
                     const actionsDiv = document.createElement("div");
                     actionsDiv.className = "actions";
@@ -136,6 +190,7 @@
 
                     actionsDiv.appendChild(editBtn);
                     actionsDiv.appendChild(delBtn);
+                    
                     li.appendChild(info);
                     li.appendChild(actionsDiv);
                     list.appendChild(li);
@@ -145,7 +200,21 @@
             }
         }
 
+        // --- CRUD Actions ---
+
         async function addZadanie() {
+            // 1. Clear previous errors
+            const errorDiv = document.getElementById("error-message");
+            errorDiv.innerHTML = "";
+            errorDiv.style.display = "none";
+            
+            // 2. Simple check for native HTML validation (optional, browser handles it)
+            const formContainer = document.querySelector('.form-container');
+            if (!formContainer.checkValidity()) {
+                // If HTML5 validation fails, the browser shows its message. Stop JS submission.
+                return; 
+            }
+
             const zad = {
                 tytul: document.getElementById("tytul").value.trim(),
                 opis: document.getElementById("opis").value.trim(),
@@ -162,15 +231,28 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(zad)
                 });
-                if (!res.ok) throw new Error("Błąd dodawania: " + res.status);
 
+                if (!res.ok) {
+                    // Handle custom 400 Bad Request JSON response
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const errorData = await res.json();
+                        displayBackendErrors(errorData);
+                        throw new Error("Błąd dodawania: " + res.status);
+                    }
+                    
+                    // Fallback for non-JSON errors (e.g., 404, 500)
+                    throw new Error("Błąd dodawania: " + res.status);
+                }
+
+                // Success: clear inputs
                 document.getElementById("tytul").value = "";
                 document.getElementById("opis").value = "";
                 document.getElementById("deadline").value = "";
                 document.getElementById("priorytet").value = "3";
-                document.getElementById("status").value = "";
+                document.getElementById("status").value = "todo";
                 document.getElementById("wykonawca").value = "";
-                document.getElementById("szacowanyCzas").value = "";
+                document.getElementById("szacowanyCzas").value = "0";
 
                 await loadZadania();
             } catch (e) {
@@ -179,14 +261,22 @@
         }
 
         function editZadanie(zadanie) {
+            // Populate form fields with task data
             document.getElementById("tytul").value = zadanie.tytul;
             document.getElementById("opis").value = zadanie.opis;
-            document.getElementById("deadline").value = zadanie.deadline ? new Date(zadanie.deadline).toISOString().split('T')[0] : '';
+            
+            // Format date for the input field
+            const formattedDate = zadanie.deadline ? new Date(zadanie.deadline).toISOString().split('T')[0] : '';
+            document.getElementById("deadline").value = formattedDate;
+
             document.getElementById("priorytet").value = zadanie.priorytet;
             document.getElementById("status").value = zadanie.status;
-            document.getElementById("wykonawca").value = zadanie.wykonawca;
+            document.getElementById("wykonawca").value = zadanie.wykonawca || '';
             document.getElementById("szacowanyCzas").value = zadanie.szacowanyCzas;
 
+            // Optional: You would typically replace the Add button with an Update button here.
+            // For simplicity in this example, we just populate the fields.
+            // You are deleting the task after filling the form, which seems like a temporary solution.
             deleteZadanie(zadanie.id);
         }
 
@@ -199,6 +289,7 @@
             }
         }
 
+        // Initial load
         loadZadania();
     </script>
 </body>
