@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZadanieApp.Api.Data;
 using ZadanieApp.Api.Models;
-using System.Linq;
 
 namespace ZadanieApp.Api.Controllers
 {
@@ -19,7 +18,7 @@ namespace ZadanieApp.Api.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int skip = 0, [FromQuery] int take = 100)
         {
             var list = await _db.Zadania
-                .OrderByDescending(z => z.Id) // Ordered by Id descending for better list viewing
+                .OrderByDescending(z => z.Id)
                 .Skip(Math.Max(0, skip))
                 .Take(Math.Clamp(take, 1, 500))
                 .ToListAsync();
@@ -40,14 +39,14 @@ namespace ZadanieApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Zadanie model)
         {
-            // Custom check and formatting for ModelState validation errors
+            // Custom check and formatting for ModelState validation errors (400 Bad Request)
             if (!ModelState.IsValid)
             {
                 var fieldErrors = ModelState.Keys
                     .SelectMany(key => ModelState[key]!.Errors.Select(x => new 
                     {
                         field = key.ToLowerInvariant(),
-                        code = "INVALID_FORMAT", // Common code for simple validation failure
+                        code = "INVALID_FORMAT",
                         message = x.ErrorMessage
                     }))
                     .ToList();
@@ -76,6 +75,7 @@ namespace ZadanieApp.Api.Controllers
         [HttpPut("{id:long}")]
         public async Task<IActionResult> Update(long id, [FromBody] Zadanie input)
         {
+            // Simplified validation check for Update
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var exist = await _db.Zadania.FindAsync(id);

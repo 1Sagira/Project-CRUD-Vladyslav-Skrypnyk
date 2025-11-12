@@ -101,25 +101,21 @@
 </head>
 <body>
     <h1>Zadania</h1>
-    <div class="form-container">
+    
+    <form class="form-container" id="zadanie-form" onsubmit="event.preventDefault(); addZadanie();">
+        
         <input id="tytul" placeholder="Tytuł" required minlength="3" maxlength="50">
-        
         <input id="opis" placeholder="Opis" required minlength="4" maxlength="2000">
-
         <input id="deadline" type="date" placeholder="Deadline">
-
         <input id="priorytet" type="number" min="1" max="5" value="3" placeholder="Priorytet min='1' max='5' value='3'">
-        
         <input id="status" placeholder="Status (np. todo)" required>
-
         <input id="wykonawca" type="text" placeholder="Wykonawca">
-        
         <input id="szacowanyCzas" type="number" min="0" placeholder="Szacowany czas (godz.)">
 
-        <button onclick="addZadanie()">➕ Dodaj zadanie</button>
+        <button type="submit">➕ Dodaj zadanie</button>
         
         <div id="error-message"></div>
-    </div>
+    </form>
 
     <h2>Lista zadań</h2>
     <ul id="lista"></ul>
@@ -127,22 +123,19 @@
     <script>
         const API = "https://project-crud-vladyslav-skrypnyk2.onrender.com/api/zadania";
         
-        // Helper to display backend errors
         function displayBackendErrors(errorData) {
             const errorDiv = document.getElementById("error-message");
-            errorDiv.style.display = "block"; // Show the error box
-            errorDiv.innerHTML = ""; // Clear previous errors
+            errorDiv.style.display = "block";
+            errorDiv.innerHTML = "";
 
             let html = `<strong>Błąd (${errorData.status} ${errorData.error}):</strong><ul>`;
             
             if (errorData.fieldErrors && errorData.fieldErrors.length > 0) {
                 errorData.fieldErrors.forEach(err => {
-                    // Display specific field error messages
                     html += `<li>[${err.field.toUpperCase()}]: ${err.message}</li>`;
                 });
             } else {
-                // Fallback for non-field specific errors (e.g., 409 Conflict, if implemented)
-                html += `<li>Wystąpił nieznany błąd: ${errorData.message || res.statusText}</li>`;
+                html += `<li>Wystąpił nieznany błąd: ${errorData.message || 'Brak szczegółów'}</li>`;
             }
             html += `</ul>`;
             errorDiv.innerHTML = html;
@@ -151,18 +144,17 @@
         async function loadZadania() {
             try {
                 const res = await fetch(API);
-                if (!res.ok) throw new Error("Błąd: " + res.status);
+                if (!res.ok) throw new Error("Błąd ładowania: " + res.status);
                 
                 const data = await res.json();
                 const list = document.getElementById("lista");
-                list.innerHTML = ""; // Clear list
+                list.innerHTML = "";
 
                 data.forEach(z => {
                     const li = document.createElement("li");
                     const info = document.createElement("div");
                     info.className = "zadanie-info";
                     
-                    // Format the deadline
                     const deadlineDate = z.deadline ? new Date(z.deadline).toLocaleDateString() : 'Brak';
 
                     info.innerHTML = `
@@ -207,13 +199,14 @@
             const errorDiv = document.getElementById("error-message");
             errorDiv.innerHTML = "";
             errorDiv.style.display = "none";
-            
-            // 2. Simple check for native HTML validation (optional, browser handles it)
-            const formContainer = document.querySelector('.form-container');
-            if (!formContainer.checkValidity()) {
-                // If HTML5 validation fails, the browser shows its message. Stop JS submission.
-                return; 
-            }
+
+            // 🟢 ИСПРАВЛЕНИЕ: checkValidity() теперь вызывается через событие onsubmit формы, 
+            // но мы оставим ручную проверку, если она нужна для отладки, 
+            // вызвав ее на элементе формы.
+            const formElement = document.getElementById("zadanie-form");
+
+            // Проверка checkValidity() выполнится автоматически, когда пользователь нажмет Submit.
+            // Если мы дошли до этого места, значит, браузер считает форму валидной.
 
             const zad = {
                 tytul: document.getElementById("tytul").value.trim(),
@@ -233,7 +226,6 @@
                 });
 
                 if (!res.ok) {
-                    // Handle custom 400 Bad Request JSON response
                     const contentType = res.headers.get("content-type");
                     if (contentType && contentType.indexOf("application/json") !== -1) {
                         const errorData = await res.json();
@@ -241,7 +233,6 @@
                         throw new Error("Błąd dodawania: " + res.status);
                     }
                     
-                    // Fallback for non-JSON errors (e.g., 404, 500)
                     throw new Error("Błąd dodawania: " + res.status);
                 }
 
@@ -261,11 +252,9 @@
         }
 
         function editZadanie(zadanie) {
-            // Populate form fields with task data
             document.getElementById("tytul").value = zadanie.tytul;
             document.getElementById("opis").value = zadanie.opis;
             
-            // Format date for the input field
             const formattedDate = zadanie.deadline ? new Date(zadanie.deadline).toISOString().split('T')[0] : '';
             document.getElementById("deadline").value = formattedDate;
 
@@ -274,9 +263,6 @@
             document.getElementById("wykonawca").value = zadanie.wykonawca || '';
             document.getElementById("szacowanyCzas").value = zadanie.szacowanyCzas;
 
-            // Optional: You would typically replace the Add button with an Update button here.
-            // For simplicity in this example, we just populate the fields.
-            // You are deleting the task after filling the form, which seems like a temporary solution.
             deleteZadanie(zadanie.id);
         }
 
@@ -289,7 +275,6 @@
             }
         }
 
-        // Initial load
         loadZadania();
     </script>
 </body>

@@ -14,8 +14,8 @@ namespace ZadanieApp.Api.Models
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Tytuł musi mieć od 3 do 50 znaków.")]
         public string Tytul { get; set; } = null!;
 
-        // Rule: Opis (assuming it aligns with 'code' requirements for length)
-        [StringLength(2000, MinimumLength = 4, ErrorMessage = "Opis musi mieć od 4 do 2000 znaków.")]
+        // Rule: Opis length 4-2000
+        [StringLength(2000, MinimumLength = 4, ErrorMessage = "Opis musi mieć od 4 до 2000 znaków.")]
         public string Opis { get; set; } = null!;
 
         // Rule: required, length 50 max (Status)
@@ -29,10 +29,8 @@ namespace ZadanieApp.Api.Models
 
         public string? Wykonawca { get; set; }
 
-        public int SzacowanyCzas { get; set; } // Assuming number of hours, min=0
+        public int SzacowanyCzas { get; set; } 
 
-        // Rule: Deadline (birthDate): nie późniejsza niż dziś (If Deadline means due date, this validation might be opposite)
-        // I'll keep the model field simple and check business logic in controller if needed.
         public DateTime? Deadline { get; set; }
         
         public DateTime CreatedAt { get; set; }
